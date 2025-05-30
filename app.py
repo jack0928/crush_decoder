@@ -64,6 +64,17 @@ st.markdown("""
     border-radius: 12px;
     margin-bottom: 20px;
     text-align: left;
+    font-size: 1.15em;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+
+html, body, div, p, span, label, textarea, input, button, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Gowun Dodum', sans-serif !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -81,6 +92,9 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
+st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+
 # Tabs
 tab1, tab2, tab3 = st.tabs(["💌 감정 분석", "🎭 썸 시뮬레이션", "📁 대화 저장"])
 
@@ -89,11 +103,11 @@ with tab1:
     
     
 
-    st.markdown("### 🙋‍ 상대방의 성별을 선택해주세요:")
+    st.markdown("<h5>🙋‍ 상대방의 성별을 선택해주세요:</h5>", unsafe_allow_html=True)
     gender = st.radio("성별", ["여성", "남성"], horizontal=True)
     st.session_state['target_gender'] = gender
 
-    st.markdown("### 💬 썸 메시지를 입력하세요:")
+    st.markdown("<h5>💬 썸 메시지를 입력하세요:</h5>", unsafe_allow_html=True)
     user_input = st.text_area("예: 'ㅎㅎ 아냐~ 그냥 별일 없었어 ㅋㅋ'", label_visibility="collapsed")
 
     def analyze_message(message: str) -> str:
@@ -105,7 +119,7 @@ with tab1:
             ① 감정 추정
             ② 상황 해석
             ③ 대응 팁
-            을 각각 한 문단씩 설명해줘.
+            을 각각 한 문단씩 설명해줘. 단 마크다운으로 보내지마.
 
             그리고 마지막에 이 상황에 어울리는 답장 한 문장을 추천해줘.
             {gender_text} 자연스럽고 현실적인 말투로 대답해줘.
@@ -132,20 +146,39 @@ with tab1:
             st.warning("메시지를 입력해주세요.")
 
     def display_chat():
-        for user_msg, bot_msg in st.session_state['chat_history']:
+        for i, (user_msg, bot_msg) in enumerate(st.session_state['chat_history']):
             reply_split = bot_msg.strip().split("답장:")
             main_analysis = reply_split[0].strip()
             ai_reply = reply_split[1].strip() if len(reply_split) > 1 else None
-            st.markdown(f"<div class='user-bubble'>🙋‍♀️ <b>나:</b> {user_msg}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='bot-bubble'>🤖 <b>분석:</b><br>{main_analysis}</div>", unsafe_allow_html=True)
-            if ai_reply:
-                st.markdown(f"<div class='bot-bubble' style='background-color:#ffe4e1;'><b>💌 AI 추천 답장:</b> {ai_reply}</div>", unsafe_allow_html=True)
 
+            # 사용자 말풍선
+            st.markdown(
+                f"<div class='user-bubble'>🙋‍♀️ <b>상대방:</b> {user_msg}</div>",
+                unsafe_allow_html=True
+            )
+
+            # 분석 결과 (줄바꿈 <br> + 고정된 스타일 적용)
+            st.markdown(
+                f"""<div class='bot-bubble' style='background-color:#ffc0cb; font-size:1.05em; line-height:1.7;'>
+                <b>🤖 이 시대의 사랑 전문가:</b><br>{main_analysis.replace('\n', '<br>')}
+                </div>""",
+                unsafe_allow_html=True
+            )
+
+            # AI 추천 답장 (동일한 스타일)
+            if ai_reply:
+                st.markdown(
+                    f"""<div class='bot-bubble' style='background-color:#ffe4e1; font-size:1.05em; line-height:1.7;'>
+                    <b>💌 AI 추천 답장:</b> {ai_reply.replace('\n', '<br>')}
+                    </div>""",
+                    unsafe_allow_html=True
+                )
+            
     display_chat()
 
 # --- 썸 시뮬레이션 탭 ---
 with tab2:
-    st.subheader("🎮 썸 상대와 가상 대화해보기")
+    st.markdown("<h5>🎮 썸 상대와 가상 대화해보기</h5>", unsafe_allow_html=True)
     if st.button("🗨️ 이 사람이랑 대화해볼래요"):
         if not st.session_state['chat_history']:
             st.warning("먼저 상대의 메시지를 입력하고 분석해 주세요.")
@@ -201,7 +234,7 @@ with tab2:
 
 # --- 대화 저장 탭 ---
 with tab3:
-    st.subheader("📁 대화 내보내기 (.txt)")
+    st.markdown("<h5>📁 대화 내보내기 (.txt)</h5>", unsafe_allow_html=True)
     if st.session_state['chat_history']:
         chat_export_text = ""
         for user_msg, bot_msg in st.session_state['chat_history']:
@@ -215,3 +248,14 @@ with tab3:
         )
     else:
         st.info("아직 분석된 대화가 없습니다.")
+
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Gowun Dodum', sans-serif;
+}
+</style>
+""", unsafe_allow_html=True)
