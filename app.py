@@ -19,10 +19,91 @@ configure(api_key=api_key)
 model = GenerativeModel("gemini-1.5-flash")
 
 # 페이지 설정
-st.set_page_config(page_title="💘 썸 타는 감정 번역기")
-st.title("💘 썸 타는 감정 번역기")
-st.write("상대방의 메시지를 분석해 감정을 해석하고 대응법을 알려주는 연애 감정 분석 챗봇입니다.")
-st.markdown("🧠 **현재 역할:** 연애 감정 분석 전문가로 동작 중입니다.")
+st.set_page_config(page_title="💘 썸 타는 감정 번역기", layout="wide")
+
+# 스타일 설정
+st.markdown(
+    """
+    <style>
+    /* 버튼 스타일 */
+    .stButton>button {
+        background-color: #ffc0cb;
+        color: #fff;
+        border-radius: 12px;
+        padding: 0.6em 1.2em;
+        border: none;
+        font-weight: bold;
+        font-size: 1em;
+        transition: 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #ff9aad;
+        transform: scale(1.05);
+    }
+
+    /* 텍스트 에어리어 */
+    .stTextArea textarea {
+        border-radius: 12px;
+        border: 2px solid #ffc0cb;
+        padding: 12px;
+        background-color: #1e1e1e;
+        color: #eee;
+        font-size: 1em;
+    }
+
+    /* 마크다운 텍스트 */
+    .stMarkdown {
+        font-size: 1.1em;
+        line-height: 1.6;
+    }
+
+    /* 설명 카드 */
+    .card {
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+
+    .intro-card {
+        background-color: #fce4ec;
+        color: #333;
+    }
+
+    .role-card {
+        background-color: #e3f2fd;
+        color: #333;
+    }
+
+    /* 말풍선 UI 흉내 */
+    .user-bubble {
+        background-color: #333;
+        color: white;
+        padding: 10px;
+        border-radius: 12px;
+        margin-bottom: 5px;
+        text-align: left;
+    }
+
+    .bot-bubble {
+        background-color: #ffc0cb;
+        color: black;
+        padding: 10px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# 페이지 제목
+st.title("💘 Crush Decoder ")
+
+# 설명 문구
+st.markdown("<div class='card intro-card'>💬 상대방의 메시지를 분석해 감정을 해석하고 대응법을 알려주는 연애 감정 분석 챗봇입니다.</div>", unsafe_allow_html=True)
+
+
 st.divider()
 
 # 세션 상태 초기화 (채팅 히스토리 저장용)
@@ -54,10 +135,8 @@ def analyze_message(message: str) -> str:
 # 채팅 메시지 출력 함수
 def display_chat():
     for user_msg, bot_msg in st.session_state['chat_history']:
-        with st.chat_message("user"):
-            st.write(user_msg)
-        with st.chat_message("assistant"):
-            st.write(bot_msg)
+        st.markdown(f"<div class='user-bubble'>🙋‍♀️ <b>나:</b> {user_msg}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='bot-bubble'>🤖 <b>분석:</b><br>{bot_msg}</div>", unsafe_allow_html=True)
 
 # 입력 UI
 st.write("### 💬 썸 메시지를 입력하세요:")
