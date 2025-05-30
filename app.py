@@ -118,7 +118,10 @@ def analyze_message(message: str) -> str:
         ① 감정 추정
         ② 상황 해석
         ③ 대응 팁
-        을 각각 한 문단씩 설명해줘. 공감 가고 자연스러운 말투로 대답해줘.
+        을 각각 한 문단씩 설명해줘.
+
+        그리고 마지막에 이 상황에 어울리는 답장 한 문장을 추천해줘.
+        예를 들어 “그랬구나~ 요즘 많이 바빴겠다!” 처럼 자연스럽고 현실적인 문장이면 좋아.
 
         "{message}"
         """
@@ -135,8 +138,20 @@ def analyze_message(message: str) -> str:
 # 채팅 메시지 출력 함수
 def display_chat():
     for user_msg, bot_msg in st.session_state['chat_history']:
+        # AI 답장 분리 (기본 패턴: "추천 답장:" 또는 "답장:")
+        reply_split = bot_msg.strip().split("답장:")
+        main_analysis = reply_split[0].strip()
+        ai_reply = reply_split[1].strip() if len(reply_split) > 1 else None
+
+        # 사용자 말풍선
         st.markdown(f"<div class='user-bubble'>🙋‍♀️ <b>나:</b> {user_msg}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='bot-bubble'>🤖 <b>분석:</b><br>{bot_msg}</div>", unsafe_allow_html=True)
+
+        # 분석 결과 말풍선
+        st.markdown(f"<div class='bot-bubble'>🤖 <b>분석:</b><br>{main_analysis}</div>", unsafe_allow_html=True)
+
+        # AI 추천 답장 강조
+        if ai_reply:
+            st.markdown(f"<div class='bot-bubble' style='background-color:#ffe4e1;'><b>💌 AI 추천 답장:</b> {ai_reply}</div>", unsafe_allow_html=True)
 
 # 입력 UI
 st.write("### 💬 썸 메시지를 입력하세요:")
@@ -168,3 +183,80 @@ if st.session_state['chat_history']:
         file_name="crush_decoder_chat.txt",
         mime="text/plain"
     )
+
+
+# -------------------------------------
+# 🎭 썸 상대 시뮬레이션 시작
+# -------------------------------------
+st.divider()
+st.subheader("🎮 썸 상대와 가상 대화해보기")
+
+if st.button("🗨️ 이 사람이랑 대화해볼래요"):
+    if not st.session_state['chat_history']:
+        st.warning("먼저 상대의 메시지를 입력하고 분석해 주세요.")
+    else:
+        # 최근 메시지들로 캐릭터 스타일 추출
+        messages = [msg for msg, _ in st.session_state['chat_history']]
+        character_profile = "\n".join(f"- {m}" for m in messages[-5:])  # 최근 5개 기준
+
+        # 마지막 메시지와 분석 텍스트 추출
+        last_user_msg, last_bot_msg = st.session_state['chat_history'][-1]
+        reply_split = last_bot_msg.strip().split("답장:")
+        analysis_text = reply_split[0].strip()
+        ai_reply = reply_split[1].strip() if len(reply_split) > 1 else ""
+
+        # 캐릭터 설정 프롬프트
+        st.session_state['sim_prompt'] = f"""
+        너는 다음과 같은 메시지를 보낸 사람처럼 행동해야 해:
+
+        {character_profile}
+
+        이 사람은 썸 타는 중이며, 직설적이기보단 은근하게 감정을 표현하는 스타일이야.
+        메시지를 보면 감정을 직접적으로 말하진 않지만, 약간의 거리감과 밀당이 느껴져.
+        지금부터 사용자가 너에게 말을 걸면, 이 사람처럼 자연스럽게 반응해줘.
+
+        다음은 네가 이전에 보냈던 마지막 메시지야:
+        "{last_user_msg}"
+
+        그리고 지금 너의 감정 상태는 다음과 같아:
+        {analysis_text.replace('\n', ' ')} 
+
+        그 상황을 기억하면서 대답해줘.
+        말투는 자연스럽고 감정이 담긴 말투여야 해.
+        """
+
+        # 시뮬레이션 상태 초기화
+        st.session_state['sim_mode'] = True
+        st.session_state['sim_history'] = []
+
+        # 첫 대사: 상대가 마지막으로 한 말을 다시 언급
+        st.session_state['sim_history'].append((
+            "assistant",
+            last_user_msg
+        ))
+
+# -------------------------------------
+# 💬 시뮬레이션 챗 인터페이스
+# -------------------------------------
+if st.session_state.get('sim_mode'):
+    st.divider()
+    st.subheader("💞 가상 썸 상대와 대화 중...")
+
+    if 'sim_history' not in st.session_state:
+        st.session_state['sim_history'] = []
+
+    for role, msg in st.session_state['sim_history']:
+        with st.chat_message(role):
+            st.write(msg)
+
+    user_msg = st.chat_input("메시지를 입력해보세요 💌")
+    if user_msg:
+        with st.chat_message("user"):
+            st.write(user_msg)
+        with st.spinner("생각 중..."):
+            sim_prompt = st.session_state['sim_prompt'] + f'\n\n사용자: "{user_msg}"\n상대방:'
+            reply = model.generate_content(sim_prompt).text
+        st.session_state['sim_history'].append(("user", user_msg))
+        st.session_state['sim_history'].append(("assistant", reply))
+        with st.chat_message("assistant"):
+            st.write(reply)
