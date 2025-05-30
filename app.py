@@ -153,3 +153,18 @@ if st.button("🔍 감정 분석하기"):
 
 # 대화 내용 출력
 display_chat()
+
+# -------------------------------------
+# 💾 대화 내보내기 기능
+# -------------------------------------
+if st.session_state['chat_history']:
+    chat_export_text = ""
+    for user_msg, bot_msg in st.session_state['chat_history']:
+        chat_export_text += f"🙋‍♀️ 나: {user_msg}\n🤖 분석: {bot_msg}\n\n"
+
+    st.download_button(
+        label="📄 대화 내보내기 (.txt)",
+        data=chat_export_text,
+        file_name="crush_decoder_chat.txt",
+        mime="text/plain"
+    )
